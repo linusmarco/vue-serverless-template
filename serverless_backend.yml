@@ -1,0 +1,66 @@
+service: vue-serverless-template-backend
+
+frameworkVersion: '1.29.2'
+
+package:
+    exclude:
+        - client/**
+        - scripts/**
+
+provider:
+    name: aws
+    profile: serverless-admin
+    runtime: nodejs8.10
+    stage: ${opt:stage}
+    region: us-east-1
+
+functions:
+    sayHi:
+        handler: server/functions/index.sayHi
+        timeout: 30
+        events:
+            - http:
+                  path: hello
+                  method: get
+                  cors: true
+
+resources:
+    Resources:
+        AppCloudFrontDistribution:
+            Type: AWS::CloudFront::Distribution
+            Properties:
+                DistributionConfig:
+                    Origins:
+                        - DomainName: vue-serverless-template-frontend-${self:provider.stage}-site.s3-website-${self:provider.region}.amazonaws.com
+                          ## An identifier for the origin which must be unique within the distribution
+                          Id: S3-Website-vue-serverless-template-frontend-${self:provider.stage}-site.s3-website-${self:provider.region}.amazonaws.com
+                          CustomOriginConfig:
+                              HTTPPort: 80
+                              HTTPSPort: 443
+                              OriginProtocolPolicy: http-only
+                    Enabled: 'true'
+                    DefaultRootObject: index.html
+                    PriceClass: PriceClass_100
+                    HttpVersion: http2
+                    DefaultCacheBehavior:
+                        AllowedMethods:
+                            - DELETE
+                            - GET
+                            - HEAD
+                            - OPTIONS
+                            - PATCH
+                            - POST
+                            - PUT
+                        ## The origin id defined above
+                        TargetOriginId: S3-Website-vue-serverless-template-frontend-${self:provider.stage}-site.s3-website-${self:provider.region}.amazonaws.com
+                        ## Defining if and how the QueryString and Cookies are forwarded to the origin which in this case is S3
+                        ForwardedValues:
+                            QueryString: 'false'
+                            Cookies:
+                                Forward: none
+                        ## The protocol that users can use to access the files in the origin. To allow HTTP use `allow-all`
+                        ViewerProtocolPolicy: redirect-to-https
+                    ## The certificate to use when viewers use HTTPS to request objects.
+                    ViewerCertificate:
+                        CloudFrontDefaultCertificate: true
+                        MinimumProtocolVersion: 'TLSv1.1_2016'

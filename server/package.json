@@ -1,0 +1,14 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "author": "Linus Marco <lmarco163@gmail.com>",
+    "dependencies": {
+        "aws-sdk": "^2.382.0"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true,
+        "semi": true,
+        "printWidth": 100
+    }
+}
